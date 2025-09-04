@@ -1,0 +1,167 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{cookiecutter.project_slug}}"
+dynamic = ["version"]
+description = "{{cookiecutter.project_description}}"
+authors = [
+    {name = "{{cookiecutter.author_name}}", email = "{{cookiecutter.author_email}}"},
+]
+license = {text = "{{cookiecutter.license}}"}
+readme = "README.md"
+requires-python = ">={{cookiecutter.python_version}}"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+{%- if cookiecutter.license == 'MIT' %}
+    "License :: OSI Approved :: MIT License",
+{%- elif cookiecutter.license == 'Apache-2.0' %}
+    "License :: OSI Approved :: Apache Software License",
+{%- elif cookiecutter.license == 'BSD-3-Clause' %}
+    "License :: OSI Approved :: BSD License",
+{%- elif cookiecutter.license == 'GPL-3.0' %}
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+{%- endif %}
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: {{cookiecutter.python_version}}",
+{%- if cookiecutter.python_version|float >= 3.12 %}
+    "Programming Language :: Python :: 3.12",
+{%- endif %}
+{%- if cookiecutter.python_version|float >= 3.13 %}
+    "Programming Language :: Python :: 3.13",
+{%- endif %}
+]
+dependencies = [
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "colorama>=0.4.6",
+    {%- if cookiecutter.project_type == "cli-application" %}
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "click-man>=0.4.1",
+    {%- endif %}
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "types-pyyaml>=6.0.0",
+    "build>=1.0.0",
+    "mkdocs-material>=9.5.0",
+    {%- if cookiecutter.include_pre_commit == 'y' %}
+    "pre-commit>=3.7.0",
+    {%- endif %}
+]
+
+{%- if cookiecutter.project_type == "cli-application" %}
+[project.scripts]
+{{ cookiecutter.package_name }} = "{{ cookiecutter.package_name }}.cli:main"
+{{ cookiecutter.package_name }}-man = "{{ cookiecutter.package_name }}.cli:generate_man_page"
+{%- endif %}
+
+[project.urls]
+Homepage = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
+Repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
+Documentation = "https://{{ cookiecutter.github_username }}.github.io/{{ cookiecutter.project_slug }}"
+Issues = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "{{cookiecutter.package_name}}.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["src"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--cov={{cookiecutter.package_name}}",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+]
+
+[tool.coverage.run]
+source = ["{{cookiecutter.package_name}}"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.ruff]
+target-version = "py{{cookiecutter.python_version.replace('.', '')}}"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "PL",  # pylint
+    "PT",  # flake8-pytest-style
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long, handled by formatter
+    "PLR0913", # too many arguments
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004", "S101", "TID252", "PLC0415"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{cookiecutter.package_name}}"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "{{cookiecutter.python_version}}"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_equality = true
+extra_checks = true
+check_untyped_defs = true
+disallow_any_generics = false  # Allow flexibility for new projects
+disallow_untyped_defs = false  # Start lenient, can be tightened
+disallow_incomplete_defs = false
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+ignore_errors = true

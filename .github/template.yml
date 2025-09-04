@@ -1,0 +1,12 @@
+name: "retr0crypticghost's Python Project Template"
+description: "Personal Python project template with security-aware logging, configuration management, and testing foundation"
+homepage: "https://github.com/retr0crypticghost/python-template"
+repository: "https://github.com/retr0crypticghost/python-template"
+topics:
+  - python
+  - cookiecutter-template
+  - project-template
+  - logging
+  - configuration
+  - testing
+  - personal-template

@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "{{cookiecutter.github_username}}"
+    assignees:
+      - "{{cookiecutter.github_username}}"
+
+  # Python pip dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "{{cookiecutter.github_username}}"
+    assignees:
+      - "{{cookiecutter.github_username}}"
+    groups:
+      # Group development dependencies
+      dev-dependencies:
+        patterns:
+          - "pytest*"
+          - "mypy*"
+          - "ruff*"
+          - "pre-commit*"
+          - "types-*"
+          - "mkdocs*"
+      # Group production dependencies
+      prod-dependencies:
+        patterns:
+          - "pyyaml*"
+          - "python-dotenv*"
+          - "colorama*"
+{%- if cookiecutter.project_type == "cli-application" %}
+          - "click*"
+          - "rich*"
+{%- endif %}

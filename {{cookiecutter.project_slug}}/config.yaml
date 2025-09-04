@@ -1,0 +1,51 @@
+---
+# Configuration file for {{cookiecutter.project_name}}
+# This file provides default configuration values that can be overridden
+# by environment variables. See README.md for details.
+
+app:
+  name: {{cookiecutter.package_name}}
+  version: "0.1.0"
+  debug: false
+
+logging:
+  level: INFO
+  format: json
+  console_level: INFO
+  file_level: DEBUG
+  file_path: logs/{{cookiecutter.package_name}}.log
+  max_file_size: "10MB"
+  backup_count: 5
+
+api:
+  timeout: 30
+  max_retries: 3
+  retry_delay: 1
+  base_url: null  # Set this to your API endpoint
+
+database:
+  url: null  # Set this to your database URL
+  # Example: postgresql://user:pass@host:port/db
+  pool_size: 5
+  max_overflow: 10
+  pool_timeout: 30
+
+security:
+  secret_key: null  # Set via {{cookiecutter.package_name.upper()}}_SECRET_KEY environment variable
+  encryption_key: null  # Set via {{cookiecutter.package_name.upper()}}_ENCRYPTION_KEY environment variable
+  mask_sensitive_data: true
+  allowed_log_fields:
+    - timestamp
+    - level
+    - message
+    - module
+    - user_id  # Example of allowed ID field
+
+features:
+  caching: true
+  metrics: false
+
+# Add your custom configuration sections here
+# custom:
+#   feature_flag: true
+#   external_service_url: "https://example.com/api"
