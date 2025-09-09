@@ -54,9 +54,11 @@ echo "🔍 Validating Generated Projects..."
 for combo in "${test_combinations[@]}"; do
     IFS=':' read -r name project_type package_manager docs typed_config sbom versioning <<< "$combo"
     project_dir="test-$name"
-    package_name=$(echo "$name" | tr '-' '_')
+    # The package name is derived from the full project slug (test-$name)
+    full_project_slug="test-$name"
+    package_name=$(echo "$full_project_slug" | tr '-' '_')
     
-    echo "  🔍 Validating: $project_dir"
+    echo "  🔍 Validating: $project_dir (package: $package_name)"
     
     # Check basic structure
     test -f "$project_dir/pyproject.toml" || (echo "❌ Missing pyproject.toml in $project_dir" && exit 1)

@@ -18,33 +18,55 @@ A [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template for Pyth
 
 ## What This Template Provides
 
-This template generates projects with professional patterns and good security practices:
+This template generates projects with professional patterns, modern tooling, and comprehensive security practices:
 
-### 🔒 Security-Conscious Logging
+### 🔒 Security-First Design
 
 - **Sensitive data filtering**: Automatically masks passwords, tokens, and secrets in logs
-- **Thread-safe logging**: Safe for concurrent operations
-- **Structured output**: Consistent formatting for both development and production
-- **Audit capabilities**: Security event tracking when needed
+- **Supply chain security**: SBOM generation, dependency scanning, and vulnerability auditing  
+- **Security workflows**: CodeQL analysis, OpenSSF Scorecard, and automated security updates
+- **Audit capabilities**: Security event tracking and compliance logging
 
-### ⚙️ Hierarchical Configuration
+### ⚙️ Advanced Configuration Management
 
-- **Precedence system**: Environment variables → Config file → Defaults
-- **Type safety**: Automatic conversion and validation of configuration values
-- **Multiple formats**: YAML and JSON support with auto-detection
+- **Multiple package managers**: pip, uv, or Hatch support with optimized configurations
+- **Typed configuration**: Optional Pydantic-based settings with validation and IDE support
+- **Hierarchical loading**: Environment variables → Config file → Defaults
 - **Environment validation**: Startup checks for required configuration
 
-### 🧪 Comprehensive Testing
+### 📊 Enhanced Logging & Observability
 
-- **pytest foundation**: Ready-to-use testing setup with helpful fixtures
-- **Coverage requirements**: 90%+ coverage enforcement to maintain quality
-- **Security testing**: Patterns for testing sensitive data handling
-- **CI/CD integration**: GitHub Actions with multi-Python version testing
+- **JSON-first logging**: Structured logging with request/operation ID tracking
+- **Context management**: Automatic correlation IDs for distributed tracing
+- **Thread-safe logging**: Safe for concurrent operations with performance optimizations
+- **Flexible formats**: Switch between JSON and plain text as needed
+
+### 🧪 Comprehensive Testing & Quality
+
+- **Multi-environment CI**: Tests on Ubuntu and Windows with multiple Python versions
+- **Security testing**: Patterns for testing sensitive data handling and configuration
+- **Coverage enforcement**: 90%+ coverage requirements with quality gates
+- **Type safety**: mypy integration with graduated strictness levels
 
 ### 🚀 Professional Project Types
 
-**📚 Library Projects**: Clean package structure with modern packaging standards
-**⚡ CLI Applications**: Rich command-line interface with shell completion and documentation
+**📚 Library Projects**: Clean package structure with modern packaging standards and comprehensive documentation
+
+**⚡ CLI Applications**: Rich command-line interface with shell completion, man page generation, and professional help systems
+
+### 🛡️ Supply Chain Security
+
+- **SBOM generation**: Automatic Software Bill of Materials in CycloneDX and SPDX formats
+- **Dependency auditing**: Integrated pip-audit scanning in CI workflows  
+- **Vulnerability monitoring**: Automated dependency updates and security advisories
+- **Attestation support**: Cryptographic verification of build artifacts
+
+### 📖 Documentation & Developer Experience
+
+- **Optional MkDocs**: Material theme with automatic GitHub Pages deployment
+- **API documentation**: Auto-generated from docstrings with mkdocstrings
+- **Configuration docs**: Auto-generated documentation for typed config schemas
+- **CLI documentation**: Comprehensive usage guides and examples
 
 > **Why these features?** These are patterns I've developed through building Python projects for business use. They solve real problems around configuration management, security compliance, and professional tooling expectations.
 
@@ -75,6 +97,11 @@ package_name [data_analysis_tool]:
 project_description [A brief description of your project]: Tool for analyzing research data
 python_version [3.11]:
 project_type [library]: cli-application
+package_manager [pip]: uv
+docs [y]: y
+typed_config [n]: y
+sbom [n]: y
+versioning [setuptools-scm]: setuptools-scm
 author_name [Your Name]: retr0crypticghost
 author_email [your.email@example.com]: retr0@example.com
 github_username [your-username]: retr0crypticghost
@@ -84,7 +111,95 @@ include_pre_commit [y]: y
 license [MIT]:
 ```
 
-**Result**: A fully-configured Python project with security practices, testing setup, and professional tooling ready for development.
+**Result**: A fully-configured Python project with your chosen features, security practices, testing setup, and professional tooling ready for development.
+
+## Configuration Options
+
+The template now supports comprehensive customization:
+
+### Project Types
+- **`library`** - Python package for reusable components
+- **`cli-application`** - Command-line tool with Rich interface
+
+### Package Managers
+- **`pip`** - Traditional pip-based dependency management
+- **`uv`** - Ultra-fast Python package installer (recommended for speed)
+- **`hatch`** - Modern Python project manager with advanced features
+
+### Documentation
+- **`docs=y`** - Scaffolds MkDocs with Material theme and GitHub Pages deployment
+- **`docs=n`** - Minimal documentation setup
+
+### Typed Configuration  
+- **`typed_config=y`** - Pydantic-based settings with validation and type safety
+- **`typed_config=n`** - Traditional configuration system
+
+### Security & Compliance
+- **`sbom=y`** - Software Bill of Materials generation with CycloneDX/SPDX
+- **`sbom=n`** - Standard security workflows only
+
+### Versioning Strategy
+- **`setuptools-scm`** - Automatic versioning from Git tags
+- **`hatch`** - Hatch-based versioning (when using Hatch package manager)
+- **`manual`** - Manual version management
+
+## Common Usage Examples
+
+### Minimal Library Project
+
+For a simple Python library with basic features:
+```bash
+cookiecutter https://github.com/retr0crypticghost/python-template.git --no-input \
+  project_name="My Library" \
+  project_type="library" \
+  package_manager="pip" \
+  docs="n" \
+  typed_config="n" \
+  sbom="n" \
+  versioning="manual"
+```
+
+### Full-Featured CLI Application  
+
+For a professional command-line tool with all features:
+```bash
+cookiecutter https://github.com/retr0crypticghost/python-template.git --no-input \
+  project_name="My CLI Tool" \
+  project_type="cli-application" \
+  package_manager="uv" \
+  docs="y" \
+  typed_config="y" \
+  sbom="y" \
+  versioning="setuptools-scm"
+```
+
+### Enterprise Library
+
+For a library with enterprise-grade features:
+```bash
+cookiecutter https://github.com/retr0crypticghost/python-template.git --no-input \
+  project_name="Enterprise Library" \
+  project_type="library" \
+  package_manager="hatch" \
+  docs="y" \
+  typed_config="y" \
+  sbom="y" \
+  versioning="hatch"
+```
+
+### Quick Development Project
+
+For rapid prototyping with modern tooling:
+```bash
+cookiecutter https://github.com/retr0crypticghost/python-template.git --no-input \
+  project_name="Quick Project" \
+  project_type="library" \
+  package_manager="uv" \
+  docs="n" \
+  typed_config="y" \
+  sbom="n" \
+  versioning="manual"
+```
 
 ## Generated Project Structure
 
@@ -278,25 +393,35 @@ Additional templates planned based on actual project needs.
 ### **vs. Basic Templates**
 
 **Most templates give you**: Basic project structure, minimal configuration, simple testing setup
-**This template provides**: Security practices, professional tooling, comprehensive testing
+**This template provides**: Enterprise-grade security, flexible tooling, comprehensive automation
 
 | Feature | Basic Templates | Python Professional Template |
-|---------|----------------|----------------------------|
-| **Logging** | `logging.getLogger()` | Security filtering, thread safety, structured output |
-| **Configuration** | Basic config.py | Hierarchical system with validation |
-| **CLI Tools** | argparse basics | Rich interface with completion and man pages |
-| **Testing** | pytest setup | 90%+ coverage requirement with security testing |
-| **Security** | None | Sensitive data protection and audit capabilities |
-| **CI/CD** | Basic workflows | Multi-Python testing with quality gates |
+|---------|----------------|------------------------------|
+| **Logging** | `logging.getLogger()` | JSON logging with request IDs, security filtering, context management |
+| **Configuration** | Basic config.py | Typed Pydantic settings OR traditional hierarchical system |
+| **Package Management** | pip only | pip, uv, or Hatch with optimized configurations |
+| **CLI Tools** | argparse basics | Rich interface with completion, man pages, and context help |
+| **Testing** | pytest setup | Multi-OS, multi-Python with 90%+ coverage and security testing |
+| **Security** | None | SBOM generation, dependency auditing, sensitive data protection |
+| **CI/CD** | Basic workflows | Multi-environment with quality gates, security scanning, SBOM |
+| **Documentation** | README only | Optional MkDocs with auto-deployment and API docs |
+
+### **Enterprise Features**
+
+- **Supply Chain Security**: SBOM generation, dependency auditing, vulnerability scanning
+- **Observability**: Request/operation ID tracking, structured JSON logging, context propagation
+- **Flexibility**: Choose your package manager (pip/uv/hatch), configuration style (typed/traditional)
+- **Compliance Ready**: Security workflows, audit logging, dependency management
+- **Developer Experience**: Type hints, IDE support, comprehensive documentation
 
 ### **Time Savings**
 
-- **Skip repetitive setup**: No more copying logging/config code between projects
-- **Avoid security mistakes**: Built-in patterns for handling sensitive data
-- **Professional polish**: CLI tools that work like system utilities
-- **Quality foundations**: Testing and CI/CD setup that actually enforces standards
+- **Zero configuration**: Everything works out of the box with sensible defaults
+- **No vendor lock-in**: Choose your tools (package manager, versioning, documentation)
+- **Production ready**: Security patterns, logging, and monitoring built-in
+- **Maintenance free**: Automated dependency updates, security scanning, and quality checks
 
-> **Bottom Line**: Get projects that look and work professionally without the manual setup time.
+> **Bottom Line**: Get enterprise-grade Python projects without the complexity—choose only the features you need.
 
 ## Project Types
 
