@@ -1,3 +1,4 @@
+{%- if cookiecutter.docs == 'y' %}
 site_name: {{cookiecutter.project_name}}
 site_description: {{cookiecutter.project_description}}
 site_author: {{cookiecutter.author_name}}
@@ -37,6 +38,12 @@ theme:
 nav:
   - Home: index.md
   - Contributing: contributing.md
+  {%- if cookiecutter.typed_config == 'y' %}
+  - Configuration: configuration.md
+  {%- endif %}
+  {%- if cookiecutter.project_type == "cli-application" %}
+  - CLI Usage: cli-usage.md
+  {%- endif %}
 
 plugins:
   - search
@@ -69,3 +76,4 @@ extra:
       link: https://github.com/{{cookiecutter.github_username}}
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/{{cookiecutter.project_slug}}/
+{%- endif %}

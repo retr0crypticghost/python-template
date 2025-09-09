@@ -1,10 +1,21 @@
 [build-system]
+{%- if cookiecutter.package_manager == "hatch" %}
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+{%- else %}
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+{%- endif %}
 
 [project]
 name = "{{cookiecutter.project_slug}}"
+{%- if cookiecutter.versioning == "setuptools-scm" %}
 dynamic = ["version"]
+{%- elif cookiecutter.versioning == "hatch" and cookiecutter.package_manager == "hatch" %}
+dynamic = ["version"]
+{%- else %}
+version = "0.1.0"
+{%- endif %}
 description = "{{cookiecutter.project_description}}"
 authors = [
     {name = "{{cookiecutter.author_name}}", email = "{{cookiecutter.author_email}}"},
@@ -43,6 +54,10 @@ dependencies = [
     "rich>=13.0.0",
     "click-man>=0.4.1",
     {%- endif %}
+    {%- if cookiecutter.typed_config == 'y' %}
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    {%- endif %}
 ]
 
 [project.optional-dependencies]
@@ -53,9 +68,15 @@ dev = [
     "mypy>=1.10.0",
     "types-pyyaml>=6.0.0",
     "build>=1.0.0",
+    {%- if cookiecutter.docs == 'y' %}
     "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+    {%- endif %}
     {%- if cookiecutter.include_pre_commit == 'y' %}
     "pre-commit>=3.7.0",
+    {%- endif %}
+    {%- if cookiecutter.typed_config == 'y' %}
+    "types-pydantic>=2.0.0",
     {%- endif %}
 ]
 
@@ -68,14 +89,42 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
 Repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
+{%- if cookiecutter.docs == 'y' %}
 Documentation = "https://{{ cookiecutter.github_username }}.github.io/{{ cookiecutter.project_slug }}"
+{%- endif %}
 Issues = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/issues"
 
+{%- if cookiecutter.package_manager != "hatch" %}
 [tool.setuptools.packages.find]
 where = ["src"]
+{%- endif %}
 
+{%- if cookiecutter.versioning == "setuptools-scm" %}
 [tool.setuptools.dynamic]
 version = {attr = "{{cookiecutter.package_name}}.__version__"}
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "dirty-tag"
+write_to = "src/{{cookiecutter.package_name}}/_version.py"
+{%- elif cookiecutter.package_manager == "hatch" and cookiecutter.versioning == "hatch" %}
+[tool.hatch.version]
+path = "src/{{cookiecutter.package_name}}/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{cookiecutter.package_name}}"]
+{%- elif cookiecutter.package_manager != "hatch" and cookiecutter.versioning != "setuptools-scm" %}
+[tool.setuptools.dynamic]
+version = {attr = "{{cookiecutter.package_name}}.__version__"}
+{%- endif %}
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
