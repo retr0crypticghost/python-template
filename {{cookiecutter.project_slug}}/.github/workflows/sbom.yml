@@ -1,0 +1,92 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # Required for OIDC attestation
+  attestations: write # Required for attestation creation
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+
+      - name: Set up Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.1.0
+        with:
+          python-version: '{{ cookiecutter.python_version }}'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@61119d458adab75f756bc0b9e4bde25725f86a7a  # v0.17.2
+
+      - name: Generate SBOM with Syft
+        run: |
+          syft packages dir:. -o cyclonedx-json=sbom.json -o spdx-json=sbom.spdx.json
+          echo "Generated SBOM files:"
+          ls -la sbom.*
+
+      - name: Validate SBOM
+        run: |
+          # Basic validation - check if files exist and are not empty
+          if [ ! -s sbom.json ]; then
+            echo "❌ CycloneDX SBOM is empty or missing"
+            exit 1
+          fi
+          
+          if [ ! -s sbom.spdx.json ]; then
+            echo "❌ SPDX SBOM is empty or missing"
+            exit 1
+          fi
+          
+          echo "✅ SBOM files validated successfully"
+          
+          # Show some basic stats
+          echo "CycloneDX components:"
+          jq '.components | length' sbom.json
+          echo "SPDX packages:"
+          jq '.packages | length' sbom.spdx.json
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        with:
+          name: sbom-${% raw %}{{ github.sha }}{% endraw %}
+          path: |
+            sbom.json
+            sbom.spdx.json
+          retention-days: 90
+
+      - name: Attest SBOM (on release)
+        if: github.event_name == 'release'
+        uses: actions/attest-sbom@1c608d11d69870c2092266b3f9a6ac1a7b9058ad  # v1.4.0
+        with:
+          subject-path: 'sbom.json'
+          sbom-path: 'sbom.json'
+
+      - name: Upload SBOM to release (on release)
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191  # v2.0.8
+        with:
+          files: |
+            sbom.json
+            sbom.spdx.json
+        env:
+          GITHUB_TOKEN: ${% raw %}{{ secrets.GITHUB_TOKEN }}{% endraw %}

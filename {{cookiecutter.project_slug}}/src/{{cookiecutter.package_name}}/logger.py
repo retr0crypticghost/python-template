@@ -2,7 +2,8 @@
 Enhanced modular logger configuration for {{ cookiecutter.package_name }}.
 
 This module provides a centralized, secure, and performant logging system
-with thread safety, sensitive data filtering, and configuration integration.
+with thread safety, sensitive data filtering, JSON formatting, and
+request/operation ID tracking for better observability.
 """
 
 import json
@@ -12,9 +13,15 @@ import os
 import re
 import sys
 import threading
+import uuid
+from contextvars import ContextVar
 from datetime import datetime
 from pathlib import Path
 from typing import Any, ClassVar
+
+# Context variables for request/operation tracking
+request_id_context: ContextVar[str] = ContextVar('request_id', default='')
+operation_id_context: ContextVar[str] = ContextVar('operation_id', default='')
 
 
 class SensitiveDataFilter(logging.Filter):
@@ -158,7 +165,7 @@ class ColoredFormatter(logging.Formatter):
 
 
 class JSONFormatter(logging.Formatter):
-    """JSON formatter for structured logging."""
+    """JSON formatter for structured logging with request/operation ID support."""
 
     def format(self, record: logging.LogRecord) -> str:
         log_obj = {
@@ -173,6 +180,15 @@ class JSONFormatter(logging.Formatter):
             'thread': record.thread,
             'thread_name': record.threadName,
         }
+
+        # Add request/operation context if available
+        request_id = request_id_context.get()
+        if request_id:
+            log_obj['request_id'] = request_id
+
+        operation_id = operation_id_context.get()
+        if operation_id:
+            log_obj['operation_id'] = operation_id
 
         # Add exception info if present
         if record.exc_info:
@@ -509,6 +525,83 @@ def error(message: str, *args, **kwargs):
 def critical(message: str, *args, **kwargs):
     """Log a critical message."""
     _{{ cookiecutter.package_name }}_logger.get_logger().critical(message, *args, **kwargs)
+
+
+# Request/Operation ID context management
+def set_request_id(request_id: str | None = None) -> str:
+    """
+    Set the request ID for the current context.
+    
+    Args:
+        request_id: Request ID to set. If None, generates a new UUID4.
+        
+    Returns:
+        str: The set request ID
+    """
+    if request_id is None:
+        request_id = str(uuid.uuid4())
+    request_id_context.set(request_id)
+    return request_id
+
+
+def get_request_id() -> str:
+    """Get the current request ID from context."""
+    return request_id_context.get('')
+
+
+def set_operation_id(operation_id: str | None = None) -> str:
+    """
+    Set the operation ID for the current context.
+    
+    Args:
+        operation_id: Operation ID to set. If None, generates a new UUID4.
+        
+    Returns:
+        str: The set operation ID
+    """
+    if operation_id is None:
+        operation_id = str(uuid.uuid4())
+    operation_id_context.set(operation_id)
+    return operation_id
+
+
+def get_operation_id() -> str:
+    """Get the current operation ID from context."""
+    return operation_id_context.get('')
+
+
+def clear_context():
+    """Clear all logging context (request and operation IDs)."""
+    request_id_context.set('')
+    operation_id_context.set('')
+
+
+class LoggingContext:
+    """Context manager for setting request/operation IDs."""
+    
+    def __init__(self, request_id: str | None = None, operation_id: str | None = None):
+        self.request_id = request_id
+        self.operation_id = operation_id
+        self.previous_request_id = ''
+        self.previous_operation_id = ''
+    
+    def __enter__(self):
+        # Store previous values
+        self.previous_request_id = get_request_id()
+        self.previous_operation_id = get_operation_id()
+        
+        # Set new values
+        if self.request_id is not None:
+            set_request_id(self.request_id)
+        if self.operation_id is not None:
+            set_operation_id(self.operation_id)
+        
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Restore previous values
+        request_id_context.set(self.previous_request_id)
+        operation_id_context.set(self.previous_operation_id)
 
 
 if __name__ == "__main__":

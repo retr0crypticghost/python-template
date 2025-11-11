@@ -5,6 +5,11 @@ This module handles hierarchical configuration loading:
 DEFAULTS < CONFIG_FILE < Environment Variables
 
 Environment variables take precedence over config file, which takes precedence over defaults.
+{%- if cookiecutter.typed_config == 'y' %}
+
+When typed_config is enabled, this module provides compatibility with Pydantic settings
+while maintaining the existing API for backward compatibility.
+{%- endif %}
 """
 
 import os
@@ -14,6 +19,15 @@ from typing import Any, ClassVar
 import yaml
 
 from .logger import get_logger
+
+{%- if cookiecutter.typed_config == 'y' %}
+# Conditional import for typed configuration
+try:
+    from .settings import get_settings
+    TYPED_CONFIG_AVAILABLE = True
+except ImportError:
+    TYPED_CONFIG_AVAILABLE = False
+{%- endif %}
 
 # Initialize logger for this module
 logger = get_logger(__name__)
@@ -330,11 +344,65 @@ def get_config() -> Config:
     """
     global _config_instance  # noqa: PLW0603
     if _config_instance is None:
+{%- if cookiecutter.typed_config == 'y' %}
+        # Use typed config if available, fallback to traditional config
+        if TYPED_CONFIG_AVAILABLE:
+            _config_instance = TypedConfigAdapter()
+        else:
+            _config_instance = Config()
+{%- else %}
         _config_instance = Config()
+{%- endif %}
     return _config_instance
 
 
 def reload_config():
     """Force reload of the configuration (useful for testing or config changes)."""
     global _config_instance  # noqa: PLW0603
+{%- if cookiecutter.typed_config == 'y' %}
+    if TYPED_CONFIG_AVAILABLE:
+        _config_instance = TypedConfigAdapter()
+    else:
+        _config_instance = Config()
+{%- else %}
     _config_instance = Config()
+{%- endif %}
+
+
+{%- if cookiecutter.typed_config == 'y' %}
+
+
+class TypedConfigAdapter(Config):
+    """
+    Adapter class that provides backward compatibility with typed Pydantic settings.
+    
+    This allows existing code to continue using the Config API while benefiting
+    from type safety and validation when typed_config is enabled.
+    """
+    
+    def __init__(self):
+        """Initialize the typed config adapter."""
+        self.logger = get_logger(f"{__name__}.{self.__class__.__name__}")
+        self.logger.info("Using typed Pydantic configuration")
+        
+        try:
+            self._settings = get_settings()
+            self._config = self._settings.get_legacy_dict()
+            self.logger.info("✅ Typed configuration loaded successfully")
+        except Exception as e:
+            self.logger.error(f"❌ Failed to load typed config, falling back to traditional config: {e}")
+            # Fallback to traditional config
+            super().__init__()
+    
+    def reload(self):
+        """Reload configuration from typed settings."""
+        try:
+            # Clear the cached settings and reload
+            get_settings.cache_clear()
+            self._settings = get_settings()
+            self._config = self._settings.get_legacy_dict()
+            self.logger.info("✅ Typed configuration reloaded")
+        except Exception as e:
+            self.logger.error(f"❌ Failed to reload typed config: {e}")
+            super().reload()
+{%- endif %}
